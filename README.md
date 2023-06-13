@@ -1,4 +1,4 @@
-⁸# ansible-training
+# ansible-training
 Ansible Training
 
 # 014-roles.md
