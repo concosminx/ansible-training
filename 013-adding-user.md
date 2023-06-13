@@ -73,5 +73,3 @@ simone ALL=(ALL) NOPASSWD: ALL
        group: root
        mode: 0440
 ```
-
-### Use `changed_when: false` to 
