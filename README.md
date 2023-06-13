@@ -1,4 +1,4 @@
-# ansible-training
+⁸# ansible-training
 Ansible Training
 
 # 014-roles.md
@@ -72,4 +72,22 @@ cd <role_name>
    become: true
    roles:
      - file_servers
+```
+
+### main.yml (db_servers role)
+
+```yaml
+ - name: install mariadb server package (CentOS)
+   tags: centos,db,mariadb
+   dnf:
+     name: mariadb
+     state: latest
+   when: ansible_distribution == "CentOS"
+ 
+ - name: install mariadb server
+   tags: db,mariadb,ubuntu
+   apt:
+     name: mariadb-server
+     state: latest
+   when: ansible_distribution == "Ubuntu"
 ```
