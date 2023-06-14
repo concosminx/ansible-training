@@ -1,0 +1,46 @@
+---
+- name: Install OpenJDK 17, Gradle, and Tomcat
+  hosts: servers
+  become: yes
+
+  tasks:
+    - name: Update apt cache
+      apt:
+        update_cache: yes
+
+    - name: Install OpenJDK 17
+      apt:
+        name: openjdk-17-jdk
+        state: present
+
+    - name: Create Gradle installation directory
+      file:
+        path: /opt/gradle
+        state: directory
+        mode: "0755"
+
+    - name: Download Gradle
+      get_url:
+        url: "https://services.gradle.org/distributions/gradle-7.2-bin.zip"
+        dest: "/tmp/gradle-7.2-bin.zip"
+        mode: "0644"
+
+    - name: Unzip Gradle
+      unarchive:
+        src: "/tmp/gradle-7.2-bin.zip"
+        dest: "/opt/gradle"
+        remote_src: yes
+#        extra_opts: "--strip-components=1"
+
+    - name: Set Gradle environment variables
+      lineinfile:
+        path: "{{ ansible_env.HOME }}/.bashrc"
+        line: "export PATH=$PATH:/opt/gradle/bin"
+        state: present
+        create: yes
+
+    - name: Install Tomcat
+      apt:
+        name: tomcat9
+        state: present
+
