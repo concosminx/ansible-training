@@ -1,158 +1,76 @@
 # ansible-training
 Ansible Training
 
-# 014-roles.md
-
-### create a roles directory
-
-- `mkdir roles`
-
-### create a directory for each role you wish to add:
-
-```shell
-cd roles
- mkdir base
- mkdir db_servers
- mkdir file_servers
- mkdir web_servers
- mkdir workstations
-```
-
-### inside each role directory, create a tasks directory
-
-```shell
-cd <role_name>
- mkdir tasks
-```
-
-### site.yml (new version)
-
-```yaml
 ---
- 
- - hosts: all
-   become: true
-   pre_tasks:
- 
-   - name: update repository index (CentOS)
-     tags: always
-     dnf:
-       update_cache: yes
-     changed_when: false
-     when: ansible_distribution == "CentOS"
- 
-   - name: update repository index (Ubuntu)
-     tags: always
-     apt:
-       update_cache: yes
-     changed_when: false
-     when: ansible_distribution == "Ubuntu"
- 
- - hosts: all
-   become: true
-   roles:
-     - base
-    
- - hosts: workstations
-   become: true
-   roles:
-     - workstations
- 
- - hosts: web_servers
-   become: true
-   roles:
-     - web_servers
- 
- - hosts: db_servers
-   become: true
-   roles:
-     - db_servers
- 
- - hosts: file_servers
-   become: true
-   roles:
-     - file_servers
-```
 
-### main.yml (db_servers role)
+Source [https://www.youtube.com/@LearnLinuxTV](https://www.youtube.com/@LearnLinuxTV)
 
-```yaml
- - name: install mariadb server package (CentOS)
-   tags: centos,db,mariadb
-   dnf:
-     name: mariadb
-     state: latest
-   when: ansible_distribution == "CentOS"
- 
- - name: install mariadb server
-   tags: db,mariadb,ubuntu
-   apt:
-     name: mariadb-server
-     state: latest
-   when: ansible_distribution == "Ubuntu"
-```
+---
 
-### 015-host-variables-and-handlers
+## Testing Connectivity to Nodes
+- `ansible all -m ping`
 
-host_vars (ubuntu web server)
- apache_package_name: apache2
- apache_service: apache2
- php_package_name: libapache2-mod-php
-host_vars (ubuntu web server)
- apache_package_name: httpd
- apache_service: httpd
- php_package_name: php
-main.yml (web_servers role)
- - name: install web server packages
-   tags: apache,apache2,centos,httpd,ubuntu
-   package:
-     name:
-       - "Template:Apache package name"
-       - "Template:Php package name"
-     state: latest
-   when: ansible_distribution == "CentOS"
- 
- - name: start and enable apache
-   tags: apache,centos,httpd
-   service:
-     name: "Template:Apache service"
-     state: started
-     enabled: yes
- 
- - name: change e-mail address for admin
-   tags: apache,centos,httpd
-   lineinfile:
-     path: /etc/httpd/conf/httpd.conf
-     regexp: '^ServerAdmin'
-     line: ServerAdmin somebody@somewhere.net
-   when: ansible_distribution == "CentOS"
-   notify: restart_apache
- 
- - name: copy html file for site
-   tags: apache,apache,apache2,httpd
-   copy:
-     src: default_site.html
-     dest: /var/www/html/index.html
-     owner: root
-     group: root
-     mode: 0644
-Handlers for the web_servers role
-Create the handlers directory (within the role directory):
+## Connecting as a Different User
+- `ansible all -m ping -u sammy`
+- `ansible-playbook myplaybook.yml -u sammy`
 
- mkdir handlers
- - name: restart_apache
-   tags: apache,centos,httpd
-   service:
-     name: "Template:Apache service"
-     state: restarted
+## Using a Custom SSH Key
+- `ansible all -m ping --private-key=~/.ssh/custom_id`
+- `ansible-playbook myplaybook.yml --private-key=~/.ssh/custom_id`
 
-# 016-templates
+## Using Password-Based Authentication
+- `ansible all -m ping --ask-pass`
+- `ansible-playbook myplaybook.yml --ask-pass`
 
- ansible-playbook site.yml
-Adding a default value to the variable
-In the template, change the “AllowUsers” line to:
+## Providing the `sudo` Password
+- `ansible all -m ping --ask-become-pass`
+- `ansible-playbook myplaybook.yml --ask-become-pass`
 
- AllowUsers Template:Ssh users
-Taking it a bit further, add another variable to the template to determine whether or not password authentication is allowed for a host:
+## Using a Custom Inventory File (default inventory file is typically located at /etc/ansible/hosts)
+- `ansible all -m ping -i my_custom_inventory`
+- `default inventory file is typically located at /etc/ansible/hosts`
 
-....
+## Running ad-hoc Commands
+ - `ansible all -a "uname -a"`
+ - `ansible server1 -m apt -a "name=vim"`
+ - `ansible server1 -m apt -a "name=vim" --check` - dry run
+
+## Running Playbooks
+- `ansible-playbook myplaybook.yml`
+- `ansible-playbook -l server1 myplaybook.yml`
+
+## Getting Information about a Play
+- `ansible-playbook myplaybook.yml --list-tasks`
+- `ansible-playbook myplaybook.yml --list-hosts`
+- `ansible-playbook myplaybook.yml --list-tags`
+
+## Controlling Playbook Execution
+- `ansible-playbook myplaybook.yml --start-at-task="Set Up Nginx"`
+- `ansible-playbook myplaybook.yml --tags=mysql,nginx`
+- `ansible-playbook myplaybook.yml --skip-tags=mysql`
+
+## Using Ansible Vault to Store Sensitive Data
+### Creating a New Encrypted File
+- `ansible-vault create credentials.yml`
+### Encrypting an Existing Ansible File
+- `ansible-vault encrypt credentials.yml`
+### Viewing the Contents of an Encrypted File
+- `ansible-vault view credentials.yml`
+### Editing an Encrypted File
+- `ansible-vault edit credentials.yml`
+### Decrypting Encrypted Files
+- `ansible-vault decrypt credentials.yml`
+
+
+## Using Multiple Vault Passwords
+- `ansible-vault create --vault-id dev@prompt credentials_dev.yml`
+- `ansible-vault create --vault-id prod@prompt credentials_prod.yml`
+- `ansible-vault edit credentials_dev.yml --vault-id dev@prompt`
+
+## Running a Playbook with Data Encrypted via Ansible Vault
+- `ansible-playbook myplaybook.yml --ask-vault-pass`
+- `ansible-playbook myplaybook.yml --vault-id dev@prompt`
+
+## Debugging
+- `ansible-playbook myplaybook.yml -v`
+- `ansible-playbook myplaybook.yml -vvvv`
