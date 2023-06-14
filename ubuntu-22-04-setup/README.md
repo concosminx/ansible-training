@@ -10,6 +10,6 @@ c) Copy the ssh key to server **`ssh-copy-id -i ~/.ssh/ansible.pub SERVER-IP-1`*
 
 # 2 - Create the playbook 
 # 3 - Run the playbook
-a) **`ansible-playbook playbook.yml -i inventory.ini -l server1 -K`**
+a) **`ansible-playbook playbook.yml -i inventory -K`**
 
-	
+b) **`ansible-playbook playbook-docker.yml -i inventory -K`** 
