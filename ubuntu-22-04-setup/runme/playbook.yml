@@ -2,7 +2,7 @@
 - hosts: all
   become: true
   vars:
-    created_username: sammy
+    created_username: ansible
 
   tasks:
     - name: Install aptitude
@@ -31,7 +31,7 @@
       ansible.posix.authorized_key:
         user: "{{ created_username }}"
         state: present
-        key: "{{ lookup('file', lookup('env','HOME') + '/.ssh/id_rsa.pub') }}"
+        key: "{{ lookup('file', lookup('env','HOME') + '/.ssh/ansible.pub') }}"
 
     - name: Disable password authentication for root
       lineinfile:
